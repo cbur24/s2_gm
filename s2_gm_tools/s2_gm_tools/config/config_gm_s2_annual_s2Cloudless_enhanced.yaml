@@ -10,6 +10,7 @@ plugin_config:
   year: '2022'
   nodata_classes: ["nodata"]
   cp_threshold: 0.1
+  window_smoothing: 20 
   aux_names:
     smad: smad
     emad: emad
@@ -20,6 +21,7 @@ product:
   short_name: ga_s2_gm_cyear_3 
   version: 0.0.1
   product_family: geomedian
+  region_code_format: x{x:03d}y{y:03d}
     
   # -- EO Dataset3 relative section --
   naming_conventions_values: dea_c3

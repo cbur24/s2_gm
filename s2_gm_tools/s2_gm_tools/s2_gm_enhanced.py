@@ -4,6 +4,7 @@ Sentinel-2 Geomedian with enhanced s2Cloudless masking
 TODO:
 - Should I be doing something with fusers?
 - Consider how nodata is handled, explicitly add to outputs?
+- How do I specify different resampling per band?
 
 """
 
@@ -46,9 +47,10 @@ class GMS2AUS(StatsPluginInterface):
         cp_threshold: float = 0.1,
         year: str = None,
         cloud_filters: Optional[Iterable[Tuple[str, int]]] = [
-            ["opening", 6],
-            ["dilation", 10],
+            ["opening", 4],
+            ["dilation", 11],
         ],
+        window_smoothing: int = 20,
         aux_names: Dict[str, str] = None,
         work_chunks: Tuple[int, int] = (400,400),
         output_dtype: str = "float32",
@@ -59,6 +61,8 @@ class GMS2AUS(StatsPluginInterface):
             if aux_names is None
             else aux_names
         )
+        
+        self.resampling=resampling
         self.bands = bands
         self.mask_band = mask_band
         self.proba_band = proba_band
@@ -68,6 +72,7 @@ class GMS2AUS(StatsPluginInterface):
         self.s2cloudless_enchance = s2cloudless_enchance
         self.nodata_classes= nodata_classes
         self.cp_threshold = cp_threshold
+        self.window_smoothing = window_smoothing
         self.year = year
         self.cloud_filters = cloud_filters
         self.work_chunks = work_chunks
@@ -94,7 +99,8 @@ class GMS2AUS(StatsPluginInterface):
                 rgb_bands = ("nbart_red", "nbart_green", "nbart_blue")
 
         super().__init__(
-            input_bands=tuple(bands)+(mask_band,)+(proba_band,)+(contiguity_band,), 
+            input_bands=tuple(bands)+(mask_band,)+(proba_band,)+(contiguity_band,),
+            resampling=resampling,
             **kwargs
         )
 
@@ -175,14 +181,19 @@ class GMS2AUS(StatsPluginInterface):
             # Select a single year of data as we only needed multiple years
             # for the cloud probabilities quantiles.
             xx = xx.sel(time=self.year)
+
+            # Apply a simple 200x200m window smoothing
+            #  (similar to convolution disk filter from S2Cloudless)
+            window = self.window_smoothing
+            cp_smooth = xx[self.proba_band].rolling(x=window, y=window, center=True, min_periods=1).mean()
     
             # step 2+3. cloud mask for regions repeatedly misclassified as cloud.
             bad_regions = xr.where(prob_quantile>self.cp_threshold, True, False) 
-            bad_regions_proba = xx[self.proba_band].where(bad_regions)
+            bad_regions_proba = cp_smooth.where(bad_regions)
             bad_regions_proba_mask = xr.where(bad_regions_proba>=(prob_quantile+0.4).clip(0, 0.90), True, False)
             
             # cloud mask for regions NOT repeatedly misclassified as cloud, threshold with default 0.4
-            good_regions_proba = xx[self.proba_band].where(~bad_regions)
+            good_regions_proba = cp_smooth.where(~bad_regions)
             good_regions_proba_mask = xr.where(good_regions_proba>0.4, True, False)
             
             ## Combine cloud masks
@@ -194,7 +205,8 @@ class GMS2AUS(StatsPluginInterface):
             updated_cloud_mask = mask_cleanup(updated_cloud_mask, mask_filters=self.cloud_filters)
     
             # apply the cloud mask to the data
-            xx = erase_bad(xx, updated_cloud_mask)
+            # xx = erase_bad(xx, updated_cloud_mask) (erase bad doesn't work with rolling.mean
+            xx = xx.where(~updated_cloud_mask)
     
         # drop probability layer
         xx = xx.drop_vars(self.proba_band)
