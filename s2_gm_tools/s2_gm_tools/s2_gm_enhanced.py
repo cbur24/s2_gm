@@ -227,7 +227,7 @@ class GMS2AUS(StatsPluginInterface):
             "out_chunks": (-1, -1, -1),
             "work_chunks": self.work_chunks,
             "compute_count": True,
-            "compute_mads": False,
+            "compute_mads": True,
         }
         
         gm = geomedian_with_mads(xx, **cfg)
