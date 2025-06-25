@@ -35,7 +35,7 @@ class S2Cloudless_percentiles(StatsPluginInterface):
         self,
         resampling: str = "cubic",
         bands: Sequence[str] = ["oa_s2cloudless_prob"],
-        output_bands: Sequence[str] = ['oa_s2cloudless_prob_pc_5','oa_s2cloudless_prob_pc_10','oa_s2cloudless_prob_pc_25'],
+        output_bands: Sequence[str] = ['oa_s2cloudless_prob_pc_5', 'oa_s2cloudless_prob_pc_10','oa_s2cloudless_prob_pc_25'],
         mask_band: str = "oa_s2cloudless_mask",
         chunks: Mapping[str, int] = {"y": 512, "x": 512},
         group_by: str = "solar_day",

@@ -39,6 +39,8 @@ product:
     - fmask:cloud_shadow
     - eo:sun_elevation
     - eo:sun_azimuth
+    - s2cloudless:clear
+    - s2cloudless:cloud
     - gqa:iterative_stddev_x
     - gqa:iterative_stddev_y
     - gqa:iterative_stddev_xy

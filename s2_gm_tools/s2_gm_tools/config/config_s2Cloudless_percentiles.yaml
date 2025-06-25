@@ -18,7 +18,46 @@ product:
   classifier: ard
   maturity: final
   collection_number: 3
-  
+  inherit_skip_properties:
+    - eo:cloud_cover
+    - fmask:clear
+    - fmask:snow
+    - fmask:cloud
+    - fmask:water
+    - s2cloudless:clear
+    - s2cloudless:cloud
+    - fmask:cloud_shadow
+    - eo:sun_elevation
+    - eo:sun_azimuth
+    - eo:cloud_cover
+    - sat:orbit_state
+    - sat:relative_orbit
+    - gqa:iterative_stddev_x
+    - gqa:iterative_stddev_y
+    - gqa:iterative_stddev_xy
+    - gqa:stddev_xy
+    - gqa:stddev_x
+    - gqa:stddev_y
+    - gqa:mean_xy
+    - gqa:mean_x
+    - gqa:mean_y
+    - gqa:abs_xy
+    - gqa:abs_x
+    - gqa:abs_y
+    - gqa:abs_iterative_mean_y
+    - gqa:abs_iterative_mean_x
+    - gqa:abs_iterative_mean_xy
+    - gqa:iterative_mean_xy
+    - gqa:iterative_mean_x
+    - gqa:iterative_mean_y
+    - gqa:cep90
+    - landsat:landsat_product_id
+    - landsat:landsat_scene_id
+    - landsat:collection_category
+    - landsat:collection_number
+    - landsat:wrs_path
+    - landsat:wrs_row
+
 max_processing_time: 3600
 job_queue_max_lease: 3600
 renew_safety_margin: 60
